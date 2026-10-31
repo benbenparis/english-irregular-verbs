@@ -27,33 +27,44 @@ img{max-width:100%}
   --ok:#6fcf97; --ok-soft:#1f3a2c; --bad:#f08a82; --bad-soft:#42262a; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.5;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 40px}
 .wrap{max-width:860px;margin:0 auto;display:grid;gap:20px}
 h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,5vw,38px);margin:0;line-height:1.1;text-wrap:balance}
 .sub{color:var(--muted);margin:4px 0 0}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
 .label{text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:var(--muted);font-weight:700}
 .controls{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:end}
+.controls .btn.primary{flex:1 1 100%}
 .ctl{display:grid;gap:4px}
 .ctl label{font-weight:600;font-size:15px}
 input[type=number]{font:inherit;font-size:18px;width:90px;padding:8px 10px;border:2px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)}
 .chk{display:flex;align-items:center;gap:8px;font-size:15px;padding-bottom:8px}
-.btn{font:inherit;font-weight:700;padding:10px 20px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+.btn{font:inherit;font-weight:700;min-height:44px;padding:10px 18px;border-radius:10px;-webkit-tap-highlight-color:transparent;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
 .btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
 .btn:focus-visible,input:focus-visible,details summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .tablewrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:16px}
 th{background:var(--accent);color:var(--accent-fg);text-align:left;padding:10px 12px;font-weight:700;white-space:nowrap}
-td{padding:6px;border-bottom:1px solid var(--line);vertical-align:top;min-width:120px}
-td.num{min-width:0;width:34px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;padding-top:14px}
-td.given{background:var(--given);padding:10px 12px;font-weight:700}
-td.given i{color:var(--muted);font-weight:400;font-size:14px;display:block}
+td{padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
+td.given{background:var(--given);font-weight:700}
+td.given i{color:var(--muted);font-weight:400;font-size:14px}
+/* Grille d'exercice, version téléphone (par défaut) : une carte par ligne */
+#grid,#grid tbody,#grid tr,#grid td{display:block;min-width:0;width:auto}
+#grid thead{display:none}
+#grid tr{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;background:var(--card)}
+#grid td{border:0;padding:8px 12px}
+#grid td.num{display:none}
+#grid tbody{counter-reset:ligne}
+#grid tr::before{counter-increment:ligne;content:"Ligne " counter(ligne);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:700;padding:8px 12px 0}
+#grid td::before{content:attr(data-label);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:3px}
+#grid td.given{padding-block:8px 10px}
+#grid td.given i{display:inline;margin-left:6px}
 body.noipa td.given i,body.noipa .ipa-after{display:none!important}
 .sel{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
 .sel .count{color:var(--muted);font-weight:400;font-size:14px}
 .selbtns{display:flex;gap:8px;margin:10px 0}
-.btn.small{padding:5px 12px;font-size:14px}
+.btn.small{padding:6px 12px;min-height:40px;font-size:14px}
 .catgrid{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
 .catchip{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 10px;font-weight:600;cursor:pointer;background:var(--bg)}
 .catchip:has(input:checked){background:var(--soft);border-color:var(--accent)}
@@ -63,17 +74,17 @@ body.noipa td.given i,body.noipa .ipa-after{display:none!important}
 .cathead-sel{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;list-style:none;font-weight:700}
 .cathead-sel .catname{margin-right:auto}
 .catdet .verbs{padding:4px 12px 12px}
-.btn.tiny{padding:2px 8px;font-size:13px;font-weight:600}
+.btn.tiny{padding:6px 10px;min-height:36px;font-size:13px;font-weight:600}
 .verbgrid .muted{color:var(--muted);margin:0}
-.verbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px 12px}
-.verbs label{display:flex;align-items:center;gap:8px;font-size:15px;padding:4px 6px;border-radius:6px;cursor:pointer}
+.verbs{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+.verbs label{display:flex;align-items:center;gap:8px;font-size:15px;padding:8px 6px;min-height:40px;border-radius:6px;cursor:pointer}
 .verbs label:hover{background:var(--soft)}
 .verbs label i{color:var(--muted);font-size:13px;font-style:normal}
 .ref .cathead td{background:var(--given);font-weight:700;color:var(--fg)}
 .say{font:inherit;font-size:14px;line-height:1;border:1px solid var(--line);background:var(--card);color:var(--accent);border-radius:6px;padding:2px 6px;cursor:pointer;margin-left:6px;vertical-align:middle}
 .say:hover{background:var(--soft)}
 .say:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-td input{font:inherit;font-size:16px;width:100%;padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+td input{font:inherit;font-size:17px;width:100%;min-height:44px;padding:10px 12px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);scroll-margin-bottom:150px;scroll-margin-top:80px}
 td input.ok{border-color:var(--ok);background:var(--ok-soft)}
 td input.bad{border-color:var(--bad);background:var(--bad-soft)}
 td input:disabled{opacity:.85;color:var(--bad);font-style:italic}
@@ -83,11 +94,12 @@ td .wrong{color:var(--bad);font-size:14px;text-decoration:line-through;text-deco
 #setup{display:grid;gap:20px}
 .selerr{color:var(--bad);font-weight:700;padding-bottom:8px}
 .selerr:empty{display:none}
-.exohead{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:14px}
+.exohead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:14px}
 .exoinfo{color:var(--muted);font-size:15px}
-.ipachk{margin-left:auto;padding-bottom:0}
-.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
-.result{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+.ipachk{flex:1 1 100%;padding-bottom:0;min-height:44px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;position:sticky;bottom:0;background:var(--card);padding:12px 0 0;margin-top:8px;border-top:1px solid var(--line)}
+.row .btn{flex:1 1 auto;text-align:center}
+.result{width:100%;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
 .result.ok{color:var(--ok)}.result.bad{color:var(--bad)}
 details>summary{cursor:pointer;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px}
 details>summary::-webkit-details-marker{display:none}
@@ -100,31 +112,27 @@ details[open]>summary::before{transform:rotate(90deg)}
 .ref th{padding:8px 10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
-/* Téléphone : chaque ligne du tableau devient une carte */
-@media (max-width:640px){
-  body{font-size:16px;padding-block:16px 40px}
-  .card{padding:16px}
-  .btn{padding:12px 16px}
-  .controls .btn.primary{width:100%}
-  input[type=number]{font-size:18px}
-  .exohead{gap:8px}
-  .ipachk{margin-left:0;width:100%}
-  #grid,#grid tbody,#grid tr,#grid td{display:block;min-width:0;width:auto}
-  #grid thead{display:none}
-  #grid tr{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;background:var(--card)}
-  #grid td{border:0;padding:8px 12px}
-  #grid td.num{display:none}
-  #grid tbody{counter-reset:ligne}
-  #grid tr::before{counter-increment:ligne;content:"Ligne " counter(ligne);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:700;padding:8px 12px 0}
-  #grid td::before{content:attr(data-label);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin-bottom:3px}
-  #grid td.given{background:var(--given);padding-block:8px 10px}
-  #grid td.given i{display:inline;margin-left:6px}
-  td input{font-size:17px;padding:10px 12px;scroll-margin-bottom:150px;scroll-margin-top:80px}
-  .row{position:sticky;bottom:0;background:var(--card);padding:12px 0 0;margin-top:8px;border-top:1px solid var(--line)}
-  .row .btn{flex:1 1 auto;text-align:center}
-  .result{width:100%;text-align:center;margin:0}
-  .verbs{grid-template-columns:1fr 1fr}
-  .cathead-sel .btn.tiny{padding:6px 10px}
+/* Écran large : tableau classique */
+@media (min-width:760px){
+  body{font-size:17px;padding-block:24px 48px}
+  .card{padding:20px}
+  .btn{min-height:0}
+  .controls .btn.primary{flex:0 0 auto}
+  .ipachk{flex:0 0 auto;margin-left:auto;min-height:0}
+  .verbs{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .verbs label{padding:4px 6px;min-height:0}
+  .btn.tiny{padding:2px 8px;min-height:0}
+  .btn.small{min-height:0}
+  #grid{display:table}#grid tbody{display:table-row-group}#grid thead{display:table-header-group}#grid tr{display:table-row;border:0;border-radius:0;margin:0;background:none}
+  #grid td{display:table-cell;border-bottom:1px solid var(--line);padding:6px;min-width:120px}
+  #grid tr::before,#grid td::before{content:none}
+  #grid td.num{display:table-cell;min-width:0;width:34px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;padding-top:14px}
+  #grid td.given{padding:10px 12px}
+  #grid td.given i{display:block;margin:0}
+  td input{font-size:16px;min-height:0;padding:8px 10px}
+  .row{position:static;background:none;padding:0;margin-top:16px;border:0}
+  .row .btn{flex:0 0 auto}
+  .result{width:auto;margin-left:auto;text-align:left}
 }
 </style>
 </head>
