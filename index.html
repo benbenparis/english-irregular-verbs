@@ -32,6 +32,19 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 .wrap{width:100%;margin:0 auto;display:grid;gap:20px}
 h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,2.4em,56px);margin:0;line-height:1.1;text-wrap:balance}
 .sub{color:var(--muted);margin:4px 0 0}
+.top{display:flex;align-items:flex-start;gap:12px}
+.top>div{flex:1 1 auto;min-width:0}
+.iconbtn{flex:none;width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--fg);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.iconbtn:hover{background:var(--soft);color:var(--accent)}
+.iconbtn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.hist{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.hist li{border-left:3px solid var(--accent);padding:2px 0 2px 14px}
+.hist .vh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
+.hist .vnum{font-family:var(--display);font-weight:800;font-size:1.15em}
+.hist .vdate{color:var(--muted);font-size:.9em}
+.hist .vtag{font-size:.75em;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);background:var(--soft);border-radius:6px;padding:1px 7px}
+.hist ul{margin:6px 0 0;padding-left:18px;list-style:disc}
+.hist li li{border:0;padding:1px 0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
 .label{text-transform:uppercase;letter-spacing:.08em;font-size:.75em;color:var(--muted);font-weight:700}
 .controls{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:end}
@@ -93,6 +106,9 @@ td .ipa-after{color:var(--muted);font-style:normal;display:flex;align-items:cent
 td .wrong{color:var(--bad);font-size:.88em;text-decoration:line-through;text-decoration-color:var(--bad);padding-bottom:2px}
 #setup{display:grid;gap:20px}
 .selerr{color:var(--bad);font-weight:700;padding-bottom:8px}
+.colsel{flex:1 1 100%}
+.hintsm{color:var(--muted);font-weight:400;font-size:.85em}
+.colsel .catgrid{margin-top:0}
 .selerr:empty{display:none}
 .exohead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:14px}
 .exoinfo{color:var(--muted);font-size:.95em}
@@ -118,6 +134,7 @@ details[open]>summary::before{transform:rotate(90deg)}
   .card{padding:1.25em}
   .btn{min-height:0}
   .controls .btn.primary{flex:0 0 auto}
+  .colsel{flex:1 1 320px;margin-left:8px}
   .ipachk{flex:0 0 auto;margin-left:auto;min-height:0}
   .verbs{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
   .verbs label{padding:4px 6px;min-height:0}
@@ -139,9 +156,18 @@ details[open]>summary::before{transform:rotate(90deg)}
 <body>
 
 <div class="wrap">
-  <header>
-    <h1>Verbes irréguliers</h1>
-    <p class="sub">Une case est donnée par ligne, complète les trois autres. Tab ou Entrée pour passer à la case suivante.</p>
+  <header class="top">
+    <div>
+      <h1 id="pagetitle">Verbes irréguliers</h1>
+      <p class="sub" id="pagesub">Une case est donnée par ligne, complète les trois autres. Tab ou Entrée pour passer à la case suivante.</p>
+    </div>
+    <button class="iconbtn" id="histbtn" type="button" title="Historique des versions" aria-label="Historique des versions">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/>
+        <path d="M3 4.5v4.5h4.5"/>
+        <path d="M12 7.5V12l3.5 2"/>
+      </svg>
+    </button>
   </header>
 
   <div id="setup">
@@ -152,6 +178,10 @@ details[open]>summary::before{transform:rotate(90deg)}
         <input type="number" id="n" inputmode="numeric" min="1" max="22" value="10">
       </div>
       <button class="btn primary" id="gen">Générer un tableau</button>
+      <div class="ctl colsel">
+        <label>Colonne donnée <span class="hintsm">(tirée au sort parmi celles cochées)</span></label>
+        <div class="catgrid" id="colgrid"></div>
+      </div>
       <span class="selerr" id="selerr"></span>
     </div>
     <details class="sel" id="seldetails">
@@ -177,6 +207,13 @@ details[open]>summary::before{transform:rotate(90deg)}
     </details>
   </section>
   </div>
+
+  <section class="card" id="history" hidden>
+    <div class="exohead">
+      <button class="btn" id="histback">← Retour</button>
+    </div>
+    <ol class="hist" id="histlist"></ol>
+  </section>
 
   <section class="card" id="exo" hidden>
     <div class="exohead">
@@ -349,6 +386,29 @@ const VERBS=[];
 CATEGORIES.forEach(cat=>cat.rows.forEach(v=>VERBS.push({cat:cat.name,key:cat.name+"|"+v[0],cells:[v[0],v[2],v[4],v[6]],ipa:[v[1],v[3],v[5],""]})));
 
 const COLS=["Base verbale","Prétérit","Participe passé","Traduction"];
+
+// Historique des versions (la plus récente en premier)
+const CHANGELOG=[
+  {v:"2.4",d:"1 nov. 2026",items:["Bouton Historique des versions en haut à droite.","Choix des colonnes pouvant être données, à côté du bouton Générer (ou dessous sur petit écran)."]},
+  {v:"2.3",d:"31 oct. 2026",items:["Mise en page « mobile d'abord », tableau classique à partir de 760 px de large.","Page en pleine largeur ; sur grand écran, le texte et les éléments grandissent avec la fenêtre.","« Voir les réponses » affiche aussi ta réponse fausse, barrée.","« Masquer les prononciations » cache aussi le bouton 🔊.","Espaces, majuscules, accents et ordre des mots ne comptent plus ; virgule, barre, point-virgule ou « ou » acceptés entre plusieurs réponses.","Entrée dans « Nombre de lignes » génère le tableau ; lecture audio plus fiable sur iPhone et Android."]},
+  {v:"2.2",d:"25–27 oct. 2026",items:["Version téléphone : chaque ligne devient une carte, barre de boutons collée en bas.","Chasse aux bugs : flèches des catégories, prononciations masquées partout, clavier numérique, plus d'autofocus sur tactile.","Fichier « standalone » autonome, utilisable hors de Claude, avec bandeau d'erreur de script."]},
+  {v:"2.1",d:"17 oct. 2026",items:["8 catégories : Sport, Daily Routine / At Home, Movement, Shopping, Weather, Food, School, Conversation (113 verbes).","Sélection des catégories et des verbes, avec Tout cocher / Tout décocher par catégorie.","Page de réglages séparée du tableau, bouton Retour et Nouveau tableau.","La case donnée change de colonne d'une fois sur l'autre pour un même verbe, répartition équilibrée.","« Voir les réponses » verrouille les cases dévoilées et les compte fausses ; « Valider » ne montre plus les réponses, juste du rouge.","Prononciation affichée sous les réponses validées, bouton 🔊 à côté de chaque prononciation."]},
+  {v:"2.0",d:"17 oct. 2026",items:["Nouveau format : tableau à 4 colonnes, nombre de lignes au choix, une case donnée par ligne et les trois autres à remplir.","Correction case par case, Voir les réponses, tableau de référence repliable."]},
+  {v:"1.0",d:"17 oct. 2026",items:["Première version : entraînement sur les 22 verbes de la fiche Sport (prétérit, participe passé, les deux, français → anglais, flashcards)."]},
+];
+function buildHistory(){
+  const ol=$("histlist");ol.innerHTML="";
+  CHANGELOG.forEach((c,i)=>{
+    const li=document.createElement("li");
+    const h=document.createElement("div");h.className="vh";
+    const n=document.createElement("span");n.className="vnum";n.textContent="Version "+c.v;h.appendChild(n);
+    const d=document.createElement("span");d.className="vdate";d.textContent=c.d;h.appendChild(d);
+    if(i===0){const t=document.createElement("span");t.className="vtag";t.textContent="actuelle";h.appendChild(t);}
+    li.appendChild(h);
+    const ul=document.createElement("ul");c.items.forEach(x=>{const e=document.createElement("li");e.textContent=x;ul.appendChild(e);});
+    li.appendChild(ul);ol.appendChild(li);
+  });
+}
 const $=id=>document.getElementById(id);
 let rows=[]; // {verb, given, inputs[]}
 
@@ -389,6 +449,23 @@ function accept(expected,val){
   const parts=v.split(/,|\/|;|\bou\b/).map(sq).filter(Boolean);
   return parts.length>1&&parts.every(okOne);
 }
+
+// Colonnes pouvant être données
+let givenCols=new Set([0,1,2,3]);
+try{const g=JSON.parse(localStorage.getItem("vi-givencols")||"null");if(Array.isArray(g)&&g.length)givenCols=new Set(g.filter(c=>c>=0&&c<4));}catch(e){}
+function buildCols(){
+  const g=$("colgrid");g.innerHTML="";
+  COLS.forEach((name,c)=>{
+    const lab=document.createElement("label");lab.className="catchip";
+    const cb=document.createElement("input");cb.type="checkbox";cb.id="col-"+c;cb.checked=givenCols.has(c);
+    cb.addEventListener("change",()=>{
+      if(cb.checked)givenCols.add(c);else if(givenCols.size>1)givenCols.delete(c);else cb.checked=true; // au moins une colonne
+      try{localStorage.setItem("vi-givencols",JSON.stringify([...givenCols]));}catch(e){}
+    });
+    lab.appendChild(cb);lab.appendChild(document.createTextNode(name));g.appendChild(lab);
+  });
+}
+buildCols();
 
 // Sélection des verbes
 let selCats=new Set(CATEGORIES.map(c=>c.name));
@@ -468,7 +545,8 @@ function generate(){
   try{lastGiven=JSON.parse(localStorage.getItem("vi-lastgiven")||"{}")||{};}catch(e){}
   const colCount=[0,0,0,0];
   pool.forEach((verb,r)=>{
-    let cands=[0,1,2,3].filter(c=>c!==lastGiven[verb.key]);
+    const allowed=[...givenCols];
+    let cands=allowed.filter(c=>c!==lastGiven[verb.key]);if(!cands.length)cands=allowed;
     const min=Math.min(...cands.map(c=>colCount[c]));
     cands=cands.filter(c=>colCount[c]===min);
     const given=cands[Math.floor(Math.random()*cands.length)];
@@ -494,7 +572,7 @@ function generate(){
   });
   try{localStorage.setItem("vi-lastgiven",JSON.stringify(lastGiven));}catch(e){}
   $("exoinfo").textContent=`${n} ligne${n>1?"s":""} · ${[...new Set(pool.map(v=>v.cat))].join(", ")}`;
-  $("setup").hidden=true;$("exo").hidden=false;window.scrollTo({top:0});
+  showPage("exo");
   const all=document.querySelectorAll("#grid input");if(all.length)all[all.length-1].enterKeyHint="done";
   const touch=window.matchMedia&&matchMedia("(pointer:coarse)").matches;
   if(all.length&&!touch)all[0].focus();
@@ -524,7 +602,13 @@ $("n").addEventListener("change",()=>{const max=parseInt($("n").max)||1;let v=pa
 $("gen").addEventListener("click",generate);
 $("n").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("n").dispatchEvent(new Event("change"));generate();}});
 $("regen").addEventListener("click",generate);
-$("back").addEventListener("click",()=>{$("exo").hidden=true;$("setup").hidden=false;window.scrollTo({top:0});});
+$("back").addEventListener("click",()=>showPage("setup"));
+// Le bouton Historique n'apparaît que sur la page de réglages
+const TITLES={setup:["Verbes irréguliers","Une case est donnée par ligne, complète les trois autres. Tab ou Entrée pour passer à la case suivante."],exo:["Verbes irréguliers","Une case est donnée par ligne, complète les trois autres. Tab ou Entrée pour passer à la case suivante."],history:["Historique des versions","Les modifications apportées à la page, de la plus récente à la première."]};
+function showPage(id){["setup","exo","history"].forEach(x=>$(x).hidden=x!==id);$("histbtn").hidden=id!=="setup";$("pagetitle").textContent=TITLES[id][0];$("pagesub").textContent=TITLES[id][1];window.scrollTo({top:0});}
+$("histbtn").addEventListener("click",()=>showPage("history"));
+$("histback").addEventListener("click",()=>showPage("setup"));
+buildHistory();
 function applyIpa(){document.body.classList.toggle("noipa",$("noipa").checked);try{localStorage.setItem("vi-noipa",$("noipa").checked?"1":"0");}catch(e){}}
 try{$("noipa").checked=localStorage.getItem("vi-noipa")==="1";}catch(e){}
 applyIpa();
